@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Repos\\Faculdade\\SI\\Trabalho 1\\AlgGen\\SI_Alg_Gen\\SI_Alg_Gen\\SI_Alg_Gen.csproj": {}
+    "C:\\Repos\\Faculdade\\si202202\\Trabalho 1\\AlgoritmoGenetico\\SI_Alg_Gen\\SI_Alg_Gen.csproj": {}
   },
   "projects": {
-    "C:\\Repos\\Faculdade\\SI\\Trabalho 1\\AlgGen\\SI_Alg_Gen\\SI_Alg_Gen\\SI_Alg_Gen.csproj": {
+    "C:\\Repos\\Faculdade\\si202202\\Trabalho 1\\AlgoritmoGenetico\\SI_Alg_Gen\\SI_Alg_Gen.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Repos\\Faculdade\\SI\\Trabalho 1\\AlgGen\\SI_Alg_Gen\\SI_Alg_Gen\\SI_Alg_Gen.csproj",
+        "projectUniqueName": "C:\\Repos\\Faculdade\\si202202\\Trabalho 1\\AlgoritmoGenetico\\SI_Alg_Gen\\SI_Alg_Gen.csproj",
         "projectName": "SI_Alg_Gen",
-        "projectPath": "C:\\Repos\\Faculdade\\SI\\Trabalho 1\\AlgGen\\SI_Alg_Gen\\SI_Alg_Gen\\SI_Alg_Gen.csproj",
+        "projectPath": "C:\\Repos\\Faculdade\\si202202\\Trabalho 1\\AlgoritmoGenetico\\SI_Alg_Gen\\SI_Alg_Gen.csproj",
         "packagesPath": "C:\\Users\\vitor\\.nuget\\packages\\",
-        "outputPath": "C:\\Repos\\Faculdade\\SI\\Trabalho 1\\AlgGen\\SI_Alg_Gen\\SI_Alg_Gen\\obj\\",
+        "outputPath": "C:\\Repos\\Faculdade\\si202202\\Trabalho 1\\AlgoritmoGenetico\\SI_Alg_Gen\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
