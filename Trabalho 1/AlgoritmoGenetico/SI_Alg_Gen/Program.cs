@@ -1,113 +1,198 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Data;
+
 public class Program
 {
-    public static void Main(String[] args)
+    class TestsConfig
     {
-        int populationSize = 100;
-        //int numberOfItems = 100;
-        int bagCapacity = 500;
-        int selectedCrossoverMembers = populationSize/2; 
-        int selectedEliteMembers = populationSize/20;
-        int maxReps = 10;
-        double mutationPercentage = 0.1;
-
-        List<int> allItems = new List<int>() { 11, 29, 2, 17, 19, 5, 14, 28, 23, 18, 16, 5, 2, 22, 20, 12, 3, 13, 16, 27, 22, 9, 13, 24, 8, 1, 4, 29, 22, 29, 21, 18, 4, 2, 25, 10, 23, 6, 17, 16, 5, 27, 20, 16, 25, 19, 24, 20, 26, 25, 6, 3, 11, 21, 12, 24, 9, 2, 5, 19, 3, 7, 28, 21, 9, 27, 26, 6, 3, 21, 25, 1, 10, 23, 10, 29, 24, 2, 28, 12, 13, 24, 27, 19, 7, 9, 17, 3, 12, 9, 19, 10, 6, 0, 21, 13, 29, 18, 18, 3 };
-
-        List<List<bool>> population = InitializePopulation(populationSize, allItems.Count);
-
-        int? bestFitness = null;
-        int repeatedBest = 0;
-
-        do
-        {
-            List<(int, List<bool>)> populationFitness = new List<(int, List<bool>)>();
-
-            Console.WriteLine("Population");
-            foreach (var member in population)
-            {
-                //string combinedString = string.Join(",", member);
-                Console.WriteLine(MeasureFitness(member, allItems, bagCapacity));
-
-                populationFitness.Add((MeasureFitness(member, allItems, bagCapacity), member));
-
-            }
-
-            int bestGenerationFitness = populationFitness.OrderByDescending(x => x.Item1).First().Item1;
-            List<(int, List<bool>)> crossoverMembers = populationFitness.OrderByDescending(x => x.Item1).Take(selectedCrossoverMembers).ToList();
-            List<(int, List<bool>)> eliteMembers = populationFitness.OrderByDescending(x => x.Item1).Take(selectedEliteMembers).ToList();
-            Console.WriteLine("EliteMembers");
-            foreach (var member in eliteMembers)
-            {
-                string combinedString = string.Join(",", member.Item2);
-                Console.WriteLine(member.Item1);
-            }
-
-            if (bestGenerationFitness > bestFitness|| bestFitness == null)
-            {
-                bestFitness = bestGenerationFitness;
-                repeatedBest = 0;
-            }
-            else
-            {
-                repeatedBest++;
-                if(maxReps == repeatedBest)
-                {
-                    break;
-                }
-            }
-
-
-
-            //Console.WriteLine("CrossoverMembers");
-            //foreach (var member in crossoverMembers)
-            //{
-            //    string combinedString = string.Join(",", member.Item2);
-            //    Console.WriteLine(member.Item1 + ":" + combinedString);
-            //}
-
-
-
-            Random rnd = new Random();
-
-            List<List<bool>> newMembers = new List<List<bool>>();
-
-            for (int i = 0; i < populationSize - selectedEliteMembers; i++)
-            {
-                int rand = rnd.Next();
-
-                List<bool> parent1 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
-
-                rand = rnd.Next();
-
-                List<bool> parent2 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
-
-                newMembers.Add(Recombination(parent1, parent2, mutationPercentage));
-
-            }
-
-            newMembers.AddRange(eliteMembers.Select(x => x.Item2).ToList());
-
-            //Console.WriteLine("NewPopulation");
-
-            //foreach (var member in newMembers)
-            //{
-            //    string combinedString = string.Join(",", member);
-            //    Console.WriteLine(MeasureFitness(member, allItems, bagCapacity) + ":" + combinedString);
-            //}
-
-            population = newMembers;
-
-        }while (repeatedBest < maxReps);
+        public int listOfItemsSize { get; set; }
+        public int populationSize { get; set; }
+        public double elitePercentage { get; set; }
+        public double mutationPercentage { get; set; }
 
     }
 
-    //private static List<int> InitializeBag(int numberOfItems)
-    //{
-    //    List<int> bag = new List<int>();
+    public static void Main(String[] args)
+    {
+        List<int> populationsSizes = new List<int>() { 100, 1000, 10000};
+        List<int> listOfItemsSizes = new List<int>() { 100, 1000, 10000 };
+        List<double> mutationPercentages = new List<double>() { 0.01, 0.05, 0.1 };
+        List<double> elitismPercentages = new List<double>() { 0.01, 0.05, 0.1 };
 
-    //    return bag;
-    //}
+        int bagCapacity = 50000;
+        int configNumber = 1;
+
+        double crossoverPercentage = 0.5;
+
+
+        List<TestsConfig> testsConfigs = new List<TestsConfig>();
+        
+        foreach(var listOfItemsSize in listOfItemsSizes)
+        {
+            foreach(var populationSize in populationsSizes)
+            {
+                foreach (var mutationPercentage in mutationPercentages)
+                {
+                    foreach(var elitePercentage in elitismPercentages)
+                    {
+                        Console.WriteLine($"");
+                        Console.WriteLine($"########");
+                        Console.WriteLine($"");
+                        Console.WriteLine($"Configurações de teste");
+                        Console.WriteLine($"");
+                        Console.WriteLine($"Tamanho da lista de itens: {listOfItemsSize}");
+                        Console.WriteLine($"Tamanho da população: {populationSize}");
+                        Console.WriteLine($"Porcentagem de mutação: {mutationPercentage}");
+                        Console.WriteLine($"Porcentagem de elitismo: {elitePercentage}");
+                        Console.WriteLine($"");
+                        Console.WriteLine($"########");
+                        Console.WriteLine($"");
+
+                        int maximumBestFitnessRepetition = 20;
+                        int numberOfTests = 100;
+                        int selectedCrossoverMembers = ((int)(populationSize * crossoverPercentage));
+                        int selectedEliteMembers = ((int)(populationSize * elitePercentage));
+
+
+                        string textFile = System.IO.File.ReadAllText(@"C:\Repos\Faculdade\si202202\Trabalho 1\lista de numeros.txt");
+
+                        List<int> allItems = textFile.Split(',').Select(x => int.Parse(x)).Take(listOfItemsSize).ToList();
+
+                        List<TestResult> testResults = new List<TestResult>();
+
+                        var tableResult = new DataTable("Resultados do teste");
+
+                        tableResult.Columns.Add(new DataColumn("Sucesso"));
+
+                        tableResult.Columns.Add(new DataColumn("Melhor Fitness"));
+                        tableResult.Columns.Add(new DataColumn("Numero de gerações"));
+
+
+
+                        for (int i = 1; i <= numberOfTests; i++)
+                        {
+                            //Console.WriteLine($"Teste {i}");
+
+                            List<List<bool>> population = InitializePopulation(populationSize, allItems.Count);
+
+                            int? bestFitness = null;
+                            int repeatedBest = 0;
+                            int currentGeneration = 1;
+                            int bestGenerationFitness;
+
+                            do
+                            {
+
+                                List<(int, List<bool>)> populationFitness = GetPopulationFitness(bagCapacity, allItems, population);
+
+                                bestGenerationFitness = populationFitness.OrderByDescending(x => x.Item1).First().Item1;
+
+                                List<(int, List<bool>)> crossoverMembers = populationFitness.OrderByDescending(x => x.Item1).Take(selectedCrossoverMembers).ToList();
+                                List<(int, List<bool>)> eliteMembers = populationFitness.OrderByDescending(x => x.Item1).Take(selectedEliteMembers).ToList();
+
+                                if (bestGenerationFitness > bestFitness || bestFitness == null)
+                                {
+                                    bestFitness = bestGenerationFitness;
+                                    repeatedBest = 0;
+                                }
+                                else
+                                {
+                                    repeatedBest++;
+                                    if (maximumBestFitnessRepetition == repeatedBest)
+                                    {
+                                        break;
+                                    }
+                                }
+                                //Console.WriteLine($"Geração: {currentGeneration}");
+                                //Console.WriteLine($"Melhor membro: {bestFitness}");
+                                //Console.WriteLine($"");
+                                //Console.WriteLine($"");
+
+                                currentGeneration++;
+
+                                population = Crossover(populationSize, selectedCrossoverMembers, selectedEliteMembers, mutationPercentage, crossoverMembers, eliteMembers);
+
+                            } while (repeatedBest < maximumBestFitnessRepetition && bestFitness != bagCapacity);
+
+                            testResults.Add(
+                                new TestResult()
+                                {
+                                    BestFitness = bestFitness.GetValueOrDefault(),
+                                    NumberOfGenerations = currentGeneration,
+                                    Success = bestFitness == bagCapacity
+                                }
+                                );
+
+                            //Console.WriteLine($"");
+                            //Console.WriteLine($"########");
+                            //Console.WriteLine($"");
+                            //Console.WriteLine($"Sucesso: {bestFitness == bagCapacity}");
+                            //Console.WriteLine($"");
+                            //Console.WriteLine($"Numero de gerações: {currentGeneration}");
+                            //Console.WriteLine($"");
+                            //Console.WriteLine($"Melhor do teste: {bestFitness}");
+                            //Console.WriteLine($"");
+                            //Console.WriteLine($"########");
+                            //Console.WriteLine($"");
+
+                        }
+
+                        foreach (var testResult in testResults)
+                        {
+                            tableResult.Rows.Add(testResult.Success, testResult.BestFitness, testResult.NumberOfGenerations);
+                        }
+
+                        configNumber++;
+                    }
+                }
+            }
+        }
+
+
+
+    }
+
+
+
+    private static List<(int, List<bool>)> GetPopulationFitness(int bagCapacity, List<int> allItems, List<List<bool>> population)
+    {
+        List<(int, List<bool>)> populationFitness = new List<(int, List<bool>)>();
+
+        foreach (var member in population)
+        {
+            populationFitness.Add((MeasureFitness(member, allItems, bagCapacity), member));
+        }
+
+        return populationFitness;
+    }
+
+    private static List<List<bool>> Crossover(int populationSize, int selectedCrossoverMembers, int selectedEliteMembers, double mutationPercentage, List<(int, List<bool>)> crossoverMembers, List<(int, List<bool>)> eliteMembers)
+    {
+        List<List<bool>> population;
+        Random rnd = new Random();
+
+        List<List<bool>> newMembers = new List<List<bool>>();
+
+        for (int i = 0; i < populationSize - selectedEliteMembers; i++)
+        {
+            int rand = rnd.Next();
+
+            List<bool> parent1 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
+
+            rand = rnd.Next();
+
+            List<bool> parent2 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
+
+            newMembers.Add(Recombination(parent1, parent2, mutationPercentage));
+
+        }
+
+        newMembers.AddRange(eliteMembers.Select(x => x.Item2).ToList());
+
+        population = newMembers;
+        return population;
+    }
 
     private static List<List<bool>> InitializePopulation(int populationSize, int totalNumberOfItems)
     {
@@ -180,7 +265,6 @@ public class Program
 
         if (randDouble< mutationPercentage)
         {
-            Console.WriteLine("mutação");
             Mutation(result);
         }
 
@@ -196,6 +280,52 @@ public class Program
 
         return member;
     }
+    public static void ToCSV(DataTable dtDataTable, string strFilePath)
+    {
+        StreamWriter sw = new StreamWriter(strFilePath, false);
+        //headers    
+        for (int i = 0; i < dtDataTable.Columns.Count; i++)
+        {
+            sw.Write(dtDataTable.Columns[i]);
+            if (i < dtDataTable.Columns.Count - 1)
+            {
+                sw.Write(",");
+            }
+        }
+        sw.Write(sw.NewLine);
+        foreach (DataRow dr in dtDataTable.Rows)
+        {
+            for (int i = 0; i < dtDataTable.Columns.Count; i++)
+            {
+                if (!Convert.IsDBNull(dr[i]))
+                {
+                    string value = dr[i].ToString();
+                    if (value.Contains(','))
+                    {
+                        value = String.Format("\"{0}\"", value);
+                        sw.Write(value);
+                    }
+                    else
+                    {
+                        sw.Write(dr[i].ToString());
+                    }
+                }
+                if (i < dtDataTable.Columns.Count - 1)
+                {
+                    sw.Write(",");
+                }
+            }
+            sw.Write(sw.NewLine);
+        }
+        sw.Close();
+    }
+}
+
+class TestResult
+{
+    public bool Success { get; set; }
+    public int BestFitness { get; set; }
+    public int NumberOfGenerations { get; set; }
 }
 
 
