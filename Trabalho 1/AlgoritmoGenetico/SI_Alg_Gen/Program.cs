@@ -143,6 +143,7 @@ public class Program
                             tableResult.Rows.Add(testResult.Success, testResult.BestFitness, testResult.NumberOfGenerations);
                         }
 
+                        ToCSV(tableResult, $@"C:\Repos\Faculdade\si202202\Trabalho 1\AlgoritmoGenetico\SI_Alg_Gen\testResults\{configNumber.ToString("###")}-listSize-{listOfItemsSize}-pop{populationSize}-elitism{elitePercentage}-mutation-{mutationPercentage}.csv");
                         configNumber++;
                     }
                 }
