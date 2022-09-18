@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Collections.Concurrent;
 using System.Data;
 
 public class Program
@@ -15,8 +16,8 @@ public class Program
 
     public static void Main(String[] args)
     {
-        List<int> populationsSizes = new List<int>() { 100, 1000, 10000};
-        List<int> listOfItemsSizes = new List<int>() { 100, 1000, 10000 };
+        List<int> populationsSizes = new List<int>() {10000};
+        List<int> listOfItemsSizes = new List<int>() {10000 };
         List<double> mutationPercentages = new List<double>() { 0.01, 0.05, 0.1 };
         List<double> elitismPercentages = new List<double>() { 0.01, 0.05, 0.1 };
 
@@ -49,7 +50,7 @@ public class Program
                         Console.WriteLine($"########");
                         Console.WriteLine($"");
 
-                        int maximumBestFitnessRepetition = 20;
+                        int maximumBestFitnessRepetition = 100;
                         int numberOfTests = 100;
                         int selectedCrossoverMembers = ((int)(populationSize * crossoverPercentage));
                         int selectedEliteMembers = ((int)(populationSize * elitePercentage));
@@ -72,7 +73,7 @@ public class Program
 
                         for (int i = 1; i <= numberOfTests; i++)
                         {
-                            //Console.WriteLine($"Teste {i}");
+                            Console.WriteLine($"Teste {i}");
 
                             List<List<bool>> population = InitializePopulation(populationSize, allItems.Count);
 
@@ -80,6 +81,8 @@ public class Program
                             int repeatedBest = 0;
                             int currentGeneration = 1;
                             int bestGenerationFitness;
+                            Console.WriteLine($"População iniciada");
+
 
                             do
                             {
@@ -104,10 +107,10 @@ public class Program
                                         break;
                                     }
                                 }
-                                //Console.WriteLine($"Geração: {currentGeneration}");
-                                //Console.WriteLine($"Melhor membro: {bestFitness}");
-                                //Console.WriteLine($"");
-                                //Console.WriteLine($"");
+                                Console.WriteLine($"Teste {i} - Geração: {currentGeneration}");
+                                Console.WriteLine($"Melhor membro: {bestGenerationFitness}");
+                                Console.WriteLine($"");
+                                Console.WriteLine($"");
 
                                 currentGeneration++;
 
@@ -124,17 +127,17 @@ public class Program
                                 }
                                 );
 
-                            //Console.WriteLine($"");
-                            //Console.WriteLine($"########");
-                            //Console.WriteLine($"");
-                            //Console.WriteLine($"Sucesso: {bestFitness == bagCapacity}");
-                            //Console.WriteLine($"");
-                            //Console.WriteLine($"Numero de gerações: {currentGeneration}");
-                            //Console.WriteLine($"");
-                            //Console.WriteLine($"Melhor do teste: {bestFitness}");
-                            //Console.WriteLine($"");
-                            //Console.WriteLine($"########");
-                            //Console.WriteLine($"");
+                            Console.WriteLine($"");
+                            Console.WriteLine($"########");
+                            Console.WriteLine($"");
+                            Console.WriteLine($"Sucesso: {bestFitness == bagCapacity}");
+                            Console.WriteLine($"");
+                            Console.WriteLine($"Numero de gerações: {currentGeneration}");
+                            Console.WriteLine($"");
+                            Console.WriteLine($"Melhor do teste: {bestFitness}");
+                            Console.WriteLine($"");
+                            Console.WriteLine($"########");
+                            Console.WriteLine($"");
 
                         }
 
@@ -158,14 +161,15 @@ public class Program
 
     private static List<(int, List<bool>)> GetPopulationFitness(int bagCapacity, List<int> allItems, List<List<bool>> population)
     {
-        List<(int, List<bool>)> populationFitness = new List<(int, List<bool>)>();
+        ConcurrentBag<(int, List<bool>)> populationFitness = new ConcurrentBag<(int, List<bool>)>();
 
-        foreach (var member in population)
+
+        Parallel.ForEach(population, member =>
         {
             populationFitness.Add((MeasureFitness(member, allItems, bagCapacity), member));
-        }
+        });
 
-        return populationFitness;
+        return populationFitness.ToList();
     }
 
     private static List<List<bool>> Crossover(int populationSize, int selectedCrossoverMembers, int selectedEliteMembers, double mutationPercentage, List<(int, List<bool>)> crossoverMembers, List<(int, List<bool>)> eliteMembers)
@@ -173,25 +177,28 @@ public class Program
         List<List<bool>> population;
         Random rnd = new Random();
 
-        List<List<bool>> newMembers = new List<List<bool>>();
+        ConcurrentBag<List<bool>> newMembers = new ConcurrentBag<List<bool>>();
 
-        for (int i = 0; i < populationSize - selectedEliteMembers; i++)
-        {
-            int rand = rnd.Next();
+        Parallel.For(0, populationSize - selectedEliteMembers, 
+         x =>
+         {
+             int rand = rnd.Next();
 
-            List<bool> parent1 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
+             List<bool> parent1 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
 
-            rand = rnd.Next();
+             rand = rnd.Next();
 
-            List<bool> parent2 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
+             List<bool> parent2 = crossoverMembers[rand % (populationSize - selectedCrossoverMembers)].Item2;
 
-            newMembers.Add(Recombination(parent1, parent2, mutationPercentage));
+             newMembers.Add(Recombination(parent1, parent2, mutationPercentage));
+         });
 
-        }
+        Parallel.ForEach(   eliteMembers.Select(x => x.Item2).ToList(), 
+            eliteMember => { 
+                newMembers.Add(eliteMember); 
+            });
 
-        newMembers.AddRange(eliteMembers.Select(x => x.Item2).ToList());
-
-        population = newMembers;
+        population = newMembers.ToList();
         return population;
     }
 
