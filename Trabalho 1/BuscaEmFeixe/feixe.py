@@ -79,7 +79,7 @@ def run():
                     acc.add(estado)
             print("fim:")
             for estado in acc:
-                print("es:", estado.vet, estado.peso)
+                print("es:", estado.peso)
             break
 
         print(i, "C")
