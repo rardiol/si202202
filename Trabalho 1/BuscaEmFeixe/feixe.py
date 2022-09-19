@@ -3,6 +3,7 @@
 import json
 import argparse
 import cProfile
+import csv
 from bitarray import bitarray
 
 class Estado():
@@ -17,7 +18,7 @@ class Estado():
         return self.peso <= T
 
 # Parametros
-def main():
+def parser_main():
     global itens, k, T, M
     parser = argparse.ArgumentParser()
     parser.add_argument("k", type=int)
@@ -33,6 +34,24 @@ def main():
     print(k, T, M, len(itens))
 #   cProfile.run("run()")
     run()
+
+def range_main():
+    global itens, k, T, M, csvwriter
+    parser = argparse.ArgumentParser()
+    parser.add_argument('itens', type=argparse.FileType('r'))
+    parser.add_argument('outcsv', type=argparse.FileType('w'))
+    args = parser.parse_args()
+    all_itens = json.loads("[" + args.itens.read() + "]")
+    csvwriter = csv.writer(args.outcsv)
+    for k in [1, 3, 5, 20, 50]:
+        for T in [273, 5629, 31381]:
+            args.outcsv.flush()
+            for M in [10]:
+                for num_itens in [100, 1000, 10000]:
+                    itens = all_itens[:num_itens]
+                    print(k, T, M, len(itens))
+                    run()
+
 
 def selecionar_k_estados(estados):
     a = sorted(estados, key=lambda x: x.peso, reverse=True)
@@ -77,13 +96,13 @@ def run():
             for estado in aestados:
                 if estado.peso == resp_max:
                     acc.add(estado)
-            print("fim:")
-            for estado in acc:
-                print("es:", estado.peso)
+            print("fim:", resp_max)
+
+            csvwriter.writerow([k, T, M, len(itens), i, resp_max, resp_max == T])
             break
 
         print(i, "C")
         anterior = resp_max
 
 
-main()
+range_main()
