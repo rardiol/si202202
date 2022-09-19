@@ -18,17 +18,19 @@ class Estado():
 
 # Parametros
 def main():
-    global itens, k, T
+    global itens, k, T, M
     parser = argparse.ArgumentParser()
     parser.add_argument("k", type=int)
     parser.add_argument("T", type=int)
+    parser.add_argument("M", type=int)
     parser.add_argument('itens', type=argparse.FileType('r'))
     parser.add_argument('outcsv', type=argparse.FileType('w'))
     args = parser.parse_args()
     itens = json.loads("[" + args.itens.read() + "]")
     k = args.k
     T = args.T
-    print(k, T, len(itens))
+    M = args.M
+    print(k, T, M, len(itens))
 #   cProfile.run("run()")
     run()
 
@@ -50,18 +52,15 @@ def sucessoras(estado, acc):
 
 def run():
     aestados = [Estado(bitarray([False] * len(itens)))]
-    anterior = aestados
+    anterior = 0
+    contador_sem_progresso = 0
 
     import itertools
     for i in itertools.count():
         print(i, "A", len(aestados))
         acc = set()
         for estado in aestados:
-            print("A0-1")
             succ = sucessoras(estado, acc)
-            print("A0-2")
-            print("A0-3")
-        print(i, "A1")
         aestados = selecionar_k_estados(acc)
         print(i, "B", len(aestados))
 
@@ -69,7 +68,11 @@ def run():
         
         resp_max = max(aestados, key=lambda x: x.peso).peso
         print("max:", resp_max)
-        if aestados == anterior:
+        if resp_max == anterior:
+            contador_sem_progresso += 1
+        else:
+            contador_sem_progresso = 0
+        if contador_sem_progresso == M:
             acc = set()
             for estado in aestados:
                 if estado.peso == resp_max:
@@ -80,7 +83,7 @@ def run():
             break
 
         print(i, "C")
-        anterior = aestados
+        anterior = resp_max
 
 
 main()
