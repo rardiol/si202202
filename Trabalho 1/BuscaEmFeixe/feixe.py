@@ -1,63 +1,86 @@
 #!/usr/bin/env python3
 
+import json
+import argparse
+import cProfile
+from bitarray import bitarray
+
+class Estado():
+    def __init__(self, vet, peso=0):
+        self.vet = vet
+        self.peso = peso
+    def include(self, ii):
+        vet = self.vet.copy()
+        vet[ii] = True
+        return Estado(vet, peso=self.peso+itens[ii])
+    def valido(self):
+        return self.peso <= T
 
 # Parametros
-itens = [1, 1, 2, 5, 4, 3, 3, 2, 6, 10]
-k = 3
-T = 25
-
-
-aestados = [tuple([False] * len(itens))]
+def main():
+    global itens, k, T
+    parser = argparse.ArgumentParser()
+    parser.add_argument("k", type=int)
+    parser.add_argument("T", type=int)
+    parser.add_argument('itens', type=argparse.FileType('r'))
+    parser.add_argument('outcsv', type=argparse.FileType('w'))
+    args = parser.parse_args()
+    itens = json.loads("[" + args.itens.read() + "]")
+    k = args.k
+    T = args.T
+    print(k, T, len(itens))
+#   cProfile.run("run()")
+    run()
 
 def selecionar_k_estados(estados):
-    a = [(estado, peso(estado)) for estado in estados]
-    a = sorted(a, key=lambda x: x[1], reverse=True)
+    a = sorted(estados, key=lambda x: x.peso, reverse=True)
     a =  a[:k]
-    return [aa[0] for aa in a]
+    print("best:", a[0].peso)
+    return a
 
-def peso(estado):
-    peso = 0
-    for ii, dentro in enumerate(estado):
-        if dentro:
-            peso += itens[ii]
-    return peso
-
-def estado_valido(estado):
-    return peso(estado) <= T
-
-def sucessoras(estado):
-    print("s1", estado)
-    acc = set()
+def sucessoras(estado, acc):
+    #print("s1", estado)
     acc.add(estado)
-    for ii, dentro in enumerate(estado):
-        print("s2", ii, dentro)
+    for ii, dentro in enumerate(estado.vet):
+        #print("s2", ii, dentro)
         if not dentro:
-            temp = list(estado)
-            temp[ii] = True
-            if estado_valido(temp):
-                acc.add(tuple(temp))
-    return acc
+            temp = estado.include(ii)
+            if temp.valido():
+                acc.add(temp)
 
-anterior = aestados
-
-while True:
-    print("1", aestados)
-    acc = set()
-    for estado in aestados:
-        acc = acc.union(sucessoras(estado))
-    aestados = selecionar_k_estados(acc)
-
-    print("2", aestados)
-    
-    if aestados == anterior:
-        a = [(estado, peso(estado)) for estado in aestados]
-        resp_max = max(a, key=lambda x: x[1])[1]
-        acc = set()
-        for estado, pes in a:
-            if pes == resp_max:
-                acc.add(estado)
-        print("fim:", acc)
-        break
-
+def run():
+    aestados = [Estado(bitarray([False] * len(itens)))]
     anterior = aestados
 
+    import itertools
+    for i in itertools.count():
+        print(i, "A", len(aestados))
+        acc = set()
+        for estado in aestados:
+            print("A0-1")
+            succ = sucessoras(estado, acc)
+            print("A0-2")
+            print("A0-3")
+        print(i, "A1")
+        aestados = selecionar_k_estados(acc)
+        print(i, "B", len(aestados))
+
+        #print("2", aestados)
+        
+        resp_max = max(aestados, key=lambda x: x.peso).peso
+        print("max:", resp_max)
+        if aestados == anterior:
+            acc = set()
+            for estado in aestados:
+                if estado.peso == resp_max:
+                    acc.add(estado)
+            print("fim:")
+            for estado in acc:
+                print("es:", estado.vet, estado.peso)
+            break
+
+        print(i, "C")
+        anterior = aestados
+
+
+main()
