@@ -43,6 +43,7 @@ def range_main():
     args = parser.parse_args()
     all_itens = json.loads("[" + args.itens.read() + "]")
     csvwriter = csv.writer(args.outcsv)
+    csvwriter.writerow(["k", "T", "M", "num items", "loops", "Resultado", "Ideal"])
     for k in [1, 3, 5, 20, 50]:
         for T in [273, 5629, 31381]:
             args.outcsv.flush()
